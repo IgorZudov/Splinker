@@ -1,9 +1,11 @@
 using System;
 using System.Globalization;
-using System.Linq;
 
 namespace WaterSplinker
 {
+    /// <summary>
+    /// Генератор входных данных
+    /// </summary>
     public static class StubGenerator
     {
         public static string[] GenerateStub(int elementCount)
@@ -26,7 +28,6 @@ namespace WaterSplinker
         {
             const int minimum = -1000;
             const int maximum = 1000;
-            var random = new Random();
             return Math.Round(rnd.NextDouble() * (maximum - minimum) + minimum, 4).ToString(
                 new NumberFormatInfo{NumberDecimalSeparator = "."});
         }

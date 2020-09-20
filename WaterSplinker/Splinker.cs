@@ -2,6 +2,9 @@ using System;
 
 namespace WaterSplinker
 {
+    /// <summary>
+    /// Поливалка
+    /// </summary>
     public class Splinker
     {
         public Point Point { get; set; }

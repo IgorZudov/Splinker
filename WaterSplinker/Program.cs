@@ -9,13 +9,15 @@ namespace WaterSplinker
     {
         private static void Main(string[] args)
         {
-            //put fileName to args
             string[] lines;
             if (args.Length > 0)
+                //читаем путь файла из аргументов
                 lines = File.ReadAllLines(args[0]);
             else
-                lines = StubGenerator.GenerateStub(100000); //большой луг в 100к цветов
-           // lines = Stub; 
+                //генерируем луг в 100к цветов
+                lines = StubGenerator.GenerateStub(100000);
+            //заглушка из примера задания
+            // lines = Stub; 
 
             
             //пусть поливалка имеет бесконечную силу напора и ограничением выступает только угл
@@ -24,47 +26,49 @@ namespace WaterSplinker
 
             var zone = GenerateZone(lines[0]);
             var flowers = GetFlowers(lines);
+            
+            //максимальное число сортов цветов
+            var maxFlowerTypeCount = 0;
+            //угл, при котором достигается максимальное числов сортов цветов
+            double needAngle = 0;
+            //счетчик сортов
+            var flowerTypeCounter = new Dictionary<string, int>();
 
-            
-            
-            
-            var flowerTypeCount = 0;
-            double angle = 0;
-            
-            var dictionary = new Dictionary<string, int>();
-            
-            for (int i = 0; i < 360; i++)
+            //точность расчетов 1 градус
+            for (var i = 1; i < 360; i++)
             {
                 zone.Rotate(i);
-                foreach (var flower in flowers)
+                
+                for (var index  = 0; index < flowers.Length; index++)
                 {
-                    if (zone.IsInside(flower.Point))
+                    var flower = flowers[index];
+                    if (!zone.IsInside(flower.Point)) 
+                        continue;
+                    
+                    if (flowerTypeCounter.ContainsKey(flower.Name))
+                        flowerTypeCounter[flower.Name] = flowerTypeCounter[flower.Name] + 1;
+                    else
+                        flowerTypeCounter[flower.Name] = 1;
+                }
+
+                if (flowerTypeCounter.Any())
+                {
+                    var maxCount = flowerTypeCounter.Values.Max();
+                    if (maxFlowerTypeCount < maxCount)
                     {
-                        if (dictionary.ContainsKey(flower.Name))
-                            dictionary[flower.Name] = dictionary[flower.Name] + 1;
-                        else
-                            dictionary[flower.Name] = 1;
+                        needAngle = i;
+                        maxFlowerTypeCount = maxCount;
                     }
                 }
 
-                if (dictionary.Any())
-                {
-                    var maxCount = dictionary.Values.Max();
-                    if (flowerTypeCount < maxCount)
-                    {
-                        angle = i;
-                        flowerTypeCount = maxCount;
-                    }
-                }
-
-                dictionary.Clear();
+                flowerTypeCounter.Clear();
             }
 
-            Console.WriteLine($"Max count: {flowerTypeCount}. Angle: {angle}");
+            Console.WriteLine($"Max count: {maxFlowerTypeCount}. Angle: {needAngle}");
         }
 
 
-        private static Flower[] GetFlowers(string[] lines) =>
+        private static Flower[] GetFlowers(IEnumerable<string> lines) =>
             lines.Skip(1).Select(x =>
             {
                 var ar = x.Split(" ");
@@ -75,6 +79,11 @@ namespace WaterSplinker
                 };
             }).ToArray();
         
+        /// <summary>
+        /// Создает зону полива
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
         private static WaterZone GenerateZone(string s)
         {
             var splinkerParts = s.Split(" ")
